@@ -132,6 +132,8 @@ AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='media')
 AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default='https://nfcsmgoaetofbhomtgzs.supabase.co/storage/v1/s3')
 AWS_S3_REGION_NAME = 'sa-east-1'
 AWS_S3_FILE_OVERWRITE = False
+AWS_S3_ADDRESSING_STYLE = "path"
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 
 if AWS_ACCESS_KEY_ID:
     # Use S3 for Media
@@ -144,6 +146,8 @@ if AWS_ACCESS_KEY_ID:
                 "bucket_name": AWS_STORAGE_BUCKET_NAME,
                 "endpoint_url": AWS_S3_ENDPOINT_URL,
                 "region_name": AWS_S3_REGION_NAME,
+                "addressing_style": AWS_S3_ADDRESSING_STYLE,
+                "signature_version": AWS_S3_SIGNATURE_VERSION,
                 "default_acl": "public-read",
                 "object_parameters": {
                     "CacheControl": "max-age=86400",
