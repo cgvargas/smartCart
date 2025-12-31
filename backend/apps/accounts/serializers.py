@@ -55,6 +55,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             'last_name',
             'phone',
         ]
+        read_only_fields = ['username']
     
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -65,6 +66,23 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+        
+        # Auto-generate unique username from email
+        email = validated_data.get('email')
+        base_username = email.split('@')[0]
+        # Clean username (remove special chars only if needed, but email parts are usually safe for username base)
+        import re
+        base_username = re.sub(r'[^a-zA-Z0-9]', '', base_username)
+        
+        username = base_username
+        counter = 1
+        
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+            
+        validated_data['username'] = username
+        
         user = User.objects.create_user(**validated_data)
         return user
 

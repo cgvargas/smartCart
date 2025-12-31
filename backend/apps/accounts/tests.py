@@ -17,7 +17,7 @@ class UserModelTests(TestCase):
         """Test creating a user with email"""
         email = 'test@example.com'
         password = 'testpass123'
-        user = User.objects.create_user(email=email, password=password)
+        user = User.objects.create_user(username='testuser', email=email, password=password)
         
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(password))
@@ -28,7 +28,7 @@ class UserModelTests(TestCase):
         """Test creating a superuser"""
         email = 'admin@example.com'
         password = 'adminpass123'
-        user = User.objects.create_superuser(email=email, password=password)
+        user = User.objects.create_superuser(username='admin', email=email, password=password)
         
         self.assertTrue(user.is_staff)
         self.assertTrue(user.is_superuser)
@@ -36,6 +36,7 @@ class UserModelTests(TestCase):
     def test_user_string_representation(self):
         """Test user string representation"""
         user = User.objects.create_user(
+            username='testuser',
             email='test@example.com',
             password='testpass123'
         )
