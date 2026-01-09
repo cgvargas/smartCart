@@ -3,10 +3,63 @@ SmartCart Accounts Serializers
 """
 
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
+
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom token serializer that uses email instead of username.
+    This is needed because our User model has USERNAME_FIELD = 'email'
+    """
+    username_field = User.USERNAME_FIELD  # This will be 'email'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove default 'username' field and add 'email' field
+        self.fields.pop('username', None)
+        self.fields['email'] = serializers.EmailField(required=True)
+    
+    def validate(self, attrs):
+        # Get email and password from request
+        email = attrs.get('email')
+        password = attrs.get('password')
+        
+        if not email or not password:
+            raise serializers.ValidationError({
+                'detail': 'Email e senha são obrigatórios.'
+            })
+        
+        # Try to find user by email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({
+                'detail': 'Credenciais inválidas.'
+            })
+        
+        # Check if password is correct
+        if not user.check_password(password):
+            raise serializers.ValidationError({
+                'detail': 'Credenciais inválidas.'
+            })
+        
+        # Check if user is active
+        if not user.is_active:
+            raise serializers.ValidationError({
+                'detail': 'Conta desativada.'
+            })
+        
+        # Generate tokens
+        refresh = self.get_token(user)
+        
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):

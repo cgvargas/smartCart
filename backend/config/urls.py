@@ -12,12 +12,20 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
+from apps.accounts.serializers import EmailTokenObtainPairSerializer
+
+
+# Custom token view that uses email instead of username
+class EmailTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer
+
+
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # JWT Authentication
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # JWT Authentication (using email instead of username)
+    path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     
