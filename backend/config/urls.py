@@ -6,8 +6,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
@@ -16,8 +19,15 @@ from apps.accounts.serializers import EmailTokenObtainPairSerializer
 
 
 # Custom token view that uses email instead of username
-class EmailTokenObtainPairView(TokenObtainPairView):
-    serializer_class = EmailTokenObtainPairSerializer
+class EmailTokenObtainPairView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = EmailTokenObtainPairSerializer(data=request.data)
+        if serializer.is_valid():
+            tokens = serializer.get_tokens()
+            return Response(tokens, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 urlpatterns = [

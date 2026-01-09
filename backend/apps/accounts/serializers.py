@@ -10,21 +10,15 @@ from django.contrib.auth.password_validation import validate_password
 User = get_user_model()
 
 
-class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+class EmailTokenObtainPairSerializer(serializers.Serializer):
     """
     Custom token serializer that uses email instead of username.
     This is needed because our User model has USERNAME_FIELD = 'email'
     """
-    username_field = User.USERNAME_FIELD  # This will be 'email'
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Remove default 'username' field and add 'email' field
-        self.fields.pop('username', None)
-        self.fields['email'] = serializers.EmailField(required=True)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
     
     def validate(self, attrs):
-        # Get email and password from request
         email = attrs.get('email')
         password = attrs.get('password')
         
@@ -53,9 +47,18 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
                 'detail': 'Conta desativada.'
             })
         
-        # Generate tokens
-        refresh = self.get_token(user)
-        
+        # Store user for token generation
+        self.user = user
+        return attrs
+    
+    def create(self, validated_data):
+        # This won't be called, but required by Serializer
+        pass
+    
+    def get_tokens(self):
+        """Generate tokens for the validated user"""
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(self.user)
         return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
