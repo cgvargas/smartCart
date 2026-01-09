@@ -9,3 +9,6 @@ python manage.py collectstatic --no-input
 
 # Apply any outstanding database migrations
 python manage.py migrate
+
+# TEMPORARY: Reset users and create superuser (remove after first run)
+python manage.py reset_users --email=admin@smartcart.com --password=SmartCart2026! --no-confirm
